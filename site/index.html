@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Catálogo de Minis</title>
+    <style>
+        body {
+            background: #0e0e0e;
+            color: #eee;
+            font-family: sans-serif;
+            padding: 30px;
+        }
+
+        input,
+        select {
+            padding: 10px;
+            margin: 5px;
+            font-size: 16px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 16px;
+        }
+
+        .card {
+            background: #1b1b1b;
+            border-radius: 10px;
+            padding: 10px;
+        }
+
+        img {
+            width: 100%;
+            border-radius: 8px;
+        }
+
+        .small {
+            color: #aaa;
+            font-size: 12px;
+        }
+
+        a {
+            text-decoration: none;
+            color: white;
+        }
+
+        #pagination button {
+            margin: 2px;
+            padding: 5px 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Catálogo de Minis</h1>
+
+    <input id="search" placeholder="Buscar por nombre o tags">
+    <select id="category">
+        <option value="">Todas las categorías</option>
+    </select>
+
+    <div class="grid" id="grid"></div>
+    <div id="pagination" style="margin-top:20px;text-align:center"></div>
+
+    <script>
+        let DATA = [];
+        let currentPage = 1;
+        const pageSize = 50; // elementos por página
+
+        // Cargar datos
+        fetch("index.json")
+            .then(r => r.json())
+            .then(d => {
+                DATA = d;
+
+                // Crear opciones de categoría
+                const cats = [...new Set(DATA.map(i => i.category))].sort();
+                const sel = document.getElementById("category");
+                cats.forEach(c => {
+                    const o = document.createElement("option");
+                    o.value = c;
+                    o.textContent = c;
+                    sel.appendChild(o);
+                });
+
+                render();
+            });
+
+        // Listeners
+        document.getElementById("search").addEventListener("input", () => { currentPage = 1; render(); });
+        document.getElementById("category").addEventListener("change", () => { currentPage = 1; render(); });
+
+        // Función de renderizado con paginación
+        function render() {
+            const q = document.getElementById("search").value.toLowerCase();
+            const cat = document.getElementById("category").value;
+            const grid = document.getElementById("grid");
+            const pagination = document.getElementById("pagination");
+            grid.innerHTML = "";
+            pagination.innerHTML = "";
+
+            // Filtrado
+            const filtered = DATA.filter(i =>
+                (!cat || i.category === cat) &&
+                (i.title.toLowerCase().includes(q) ||
+                    i.tags.join(" ").toLowerCase().includes(q))
+            );
+
+            const totalPages = Math.ceil(filtered.length / pageSize);
+            if (currentPage > totalPages) currentPage = 1;
+
+            const start = (currentPage - 1) * pageSize;
+            const end = start + pageSize;
+            const pageItems = filtered.slice(start, end);
+
+            // Render de miniaturas
+            pageItems.forEach(i => {
+                const div = document.createElement("div");
+                div.className = "card";
+                let pageUrl = i.page.replace("site/", "");
+                div.innerHTML = `
+      <a href="${pageUrl}">
+        <img src="${i.thumb}" loading="lazy">
+        <div>${i.title}</div>
+        <div class="small">${i.category}</div>
+      </a>
+    `;
+                grid.appendChild(div);
+            });
+
+            // Botones de paginación
+            for (let p = 1; p <= totalPages; p++) {
+                const btn = document.createElement("button");
+                btn.textContent = p;
+                btn.disabled = p === currentPage;
+                btn.addEventListener("click", () => { currentPage = p; render(); });
+                pagination.appendChild(btn);
+            }
+        }
+    </script>
+</body>
+
+</html>

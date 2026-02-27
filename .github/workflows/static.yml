@@ -2,8 +2,8 @@ name: Deploy static site to GitHub Pages
 
 on:
   push:
-    branches: ["main"] # Se dispara al hacer push a main
-  workflow_dispatch: # Permite correrlo manualmente
+    branches: ["main"] # Cada push a main dispara el workflow
+  workflow_dispatch: # También se puede ejecutar manualmente
 
 permissions:
   contents: read
@@ -25,20 +25,22 @@ jobs:
       # 1️⃣ Clonar el repositorio
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          lfs: true # importante para que se bajen los archivos grandes trackeados por Git LFS
 
-      # 2️⃣ Configurar GitHub Pages para usar Actions
+      # 2️⃣ Configurar Pages para usar Actions
       - name: Setup Pages
         uses: actions/configure-pages@v5
         with:
           enablement: github-actions
 
-      # 3️⃣ Subir la carpeta site como artifact
+      # 3️⃣ Subir artifact de la carpeta site (incluyendo images/)
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./site # <-- solo la carpeta site/
+          path: ./site # <-- aquí se sube todo: HTML, JSON, thumbs, pages, images
 
-      # 4️⃣ Desplegar Pages desde artifact
+      # 4️⃣ Desplegar Pages
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4

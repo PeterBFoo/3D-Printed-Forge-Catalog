@@ -1,0 +1,16 @@
+{
+  "name": "3d-printed-forge",
+  "version": "1.0.0",
+  "description": "Simple script that generates a structure of static HTML pages with a home. It allows to search inside a directory all the images files and make a simple catalog to share",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "fast-glob": "^3.3.3",
+    "p-limit": "^3.1.0",
+    "sharp": "^0.34.5"
+  }
+}
